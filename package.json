@@ -55,8 +55,5 @@
   },
   "peerDependencies": {
     "tweakpane": "^3.0.5"
-  },
-  "dependencies": {
-    "tslib": "^2.4.0"
   }
 }
