@@ -88,10 +88,6 @@ export const CustomObjectColorInputPlugin: InputBindingPlugin<
 			return null;
 		}
 		const result = parseColorInputParams(params);
-
-		console.log('result', result);
-		console.log('value', value);
-
 		return result
 			? {
 					initialValue: value,
