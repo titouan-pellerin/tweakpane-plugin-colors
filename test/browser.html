@@ -17,7 +17,7 @@
 			// Register plugin
 			pane.registerPlugin(TweakpaneColorsPlugin);
 
-			pane.addInput(params, 'color', {}).on('change', (ev) => {
+			pane.addInput(params, 'color', {view: 'color-2'}).on('change', (ev) => {
 				console.log(ev.value);
 			});
 

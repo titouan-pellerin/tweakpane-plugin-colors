@@ -1,6 +1,7 @@
 # Tweakpane plugin template
 
-Plugin template of an input binding for [Tweakpane][tweakpane].
+Custom color binding for [Tweakpane][tweakpane].
+Use ```view: 'color-2'``` to bind color between 0 and 1.
 
 ## Installation
 
@@ -33,6 +34,7 @@ const params = {
    };
 
 pane.addInput(params, 'color', {
+  // required
   view: 'color-2',
 });
 ```

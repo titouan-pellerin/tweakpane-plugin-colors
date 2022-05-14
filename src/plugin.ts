@@ -36,6 +36,7 @@ function parseColorInputParams(
 ): ColorInputParams | undefined {
 	const p = ParamsParsers;
 	return parseParams<ColorInputParams>(params, {
+		view: p.required.constant('color-2'),
 		alpha: p.optional.boolean,
 		expanded: p.optional.boolean,
 		picker: p.optional.custom(parsePickerLayout),
