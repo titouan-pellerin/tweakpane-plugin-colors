@@ -21,11 +21,11 @@ export interface PluginInputParams extends BaseInputParams {
 	view: 'color-2';
 }
 
-function colorFromObject(value: Record<string, number>): Color {
-	value.r = value.r * 255;
-	value.g = value.g * 255;
-	value.b = value.b * 255;
+function colorFromObject(value: unknown): Color {	
 	if (Color.isColorObject(value)) {
+		value.r = value.r * 255;
+		value.g = value.g * 255;
+		value.b = value.b * 255;
 		return Color.fromObject(value);
 	}
 	return Color.black();
