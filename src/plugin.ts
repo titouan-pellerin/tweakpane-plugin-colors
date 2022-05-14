@@ -21,7 +21,7 @@ export interface PluginInputParams extends BaseInputParams {
 	view: 'color-2';
 }
 
-function colorFromObject(value: unknown): Color {	
+function colorFromObject(value: unknown): Color {
 	if (Color.isColorObject(value)) {
 		value.r = value.r * 255;
 		value.g = value.g * 255;
@@ -35,16 +35,12 @@ function parseColorInputParams(
 	params: Record<string, unknown>,
 ): ColorInputParams | undefined {
 	const p = ParamsParsers;
-	
 	return parseParams<ColorInputParams>(params, {
-
 		alpha: p.optional.boolean,
 		expanded: p.optional.boolean,
 		picker: p.optional.custom(parsePickerLayout),
 	});
-
 }
-
 
 function shouldSupportAlpha(
 	initialValue: RgbColorObject | RgbaColorObject,
@@ -70,8 +66,6 @@ function writeRgbColorObject(target: any, value: Color) {
 function createColorObjectWriter(supportsAlpha: boolean): any {
 	return supportsAlpha ? writeRgbaColorObject : writeRgbColorObject;
 }
-
-
 
 // NOTE: You can see JSDoc comments of `InputBindingPlugin` for details about each property
 //
