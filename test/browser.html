@@ -1,29 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title></title>
-</head>
-<body>
-	<script src="../node_modules/tweakpane/dist/tweakpane.js"></script>
-	<script src="../dist/tweakpane-plugin-template.js"></script>
-	<script>
-		const params = {
-			prop: 3,
-		};
-		const pane = new Tweakpane.Pane();
+	<head>
+		<meta charset="UTF-8" />
+		<title></title>
+	</head>
+	<body>
+		<script src="https://unpkg.com/tweakpane@3.0.7"></script>
 
-		// Register plugin
-		pane.registerPlugin(TweakpaneTemplatePlugin);
+		<script src="../dist/tweakpane-plugin-colors.js"></script>
+		<script>
+			const params = {
+				color: {r: 0, g: 1, b: 0},
+			};
+			const pane = new Tweakpane.Pane();
 
-		// TODO: Update parameters for your plugin
-		pane.addInput(params, 'prop', {
-			view: 'dots',
-		}).on('change', (ev) => {
-			console.log(ev.value);
-		});
+			// Register plugin
+			pane.registerPlugin(TweakpaneColorsPlugin);
 
-		window.pane = pane;
-	</script>
-</body>
+			pane.addInput(params, 'color', {}).on('change', (ev) => {
+				console.log(ev.value);
+			});
+
+			window.pane = pane;
+		</script>
+	</body>
 </html>

@@ -1,22 +1,77 @@
 import {
 	BaseInputParams,
-	BindingTarget,
-	CompositeConstraint,
-	createRangeConstraint,
-	createStepConstraint,
+	Color,
+	ColorController,
+	ColorInputParams,
+	colorToHexRgbaString,
+	colorToHexRgbString,
+	CompositeColorParser,
 	InputBindingPlugin,
 	ParamsParsers,
 	parseParams,
+	parsePickerLayout,
+	RgbaColorObject,
+	RgbColorObject,
 } from '@tweakpane/core';
-
-import {PluginController} from './controller';
 
 export interface PluginInputParams extends BaseInputParams {
 	max?: number;
 	min?: number;
 	step?: number;
-	view: 'dots';
+	view: 'color-2';
 }
+
+function colorFromObject(value: Record<string, number>): Color {
+	value.r = value.r * 255;
+	value.g = value.g * 255;
+	value.b = value.b * 255;
+	if (Color.isColorObject(value)) {
+		return Color.fromObject(value);
+	}
+	return Color.black();
+}
+
+function parseColorInputParams(
+	params: Record<string, unknown>,
+): ColorInputParams | undefined {
+	const p = ParamsParsers;
+	
+	return parseParams<ColorInputParams>(params, {
+
+		alpha: p.optional.boolean,
+		expanded: p.optional.boolean,
+		picker: p.optional.custom(parsePickerLayout),
+	});
+
+}
+
+
+function shouldSupportAlpha(
+	initialValue: RgbColorObject | RgbaColorObject,
+): boolean {
+	return Color.isRgbaColorObject(initialValue);
+}
+
+function writeRgbaColorObject(target: any, value: Color) {
+	const obj = value.toRgbaObject();
+	target.writeProperty('r', obj.r / 255);
+	target.writeProperty('g', obj.g / 255);
+	target.writeProperty('b', obj.b / 255);
+	target.writeProperty('a', obj.a / 255);
+}
+
+function writeRgbColorObject(target: any, value: Color) {
+	const obj = value.toRgbaObject();
+	target.writeProperty('r', obj.r / 255);
+	target.writeProperty('g', obj.g / 255);
+	target.writeProperty('b', obj.b / 255);
+}
+
+function createColorObjectWriter(supportsAlpha: boolean): any {
+	return supportsAlpha ? writeRgbaColorObject : writeRgbColorObject;
+}
+
+
 
 // NOTE: You can see JSDoc comments of `InputBindingPlugin` for details about each property
 //
@@ -25,85 +80,46 @@ export interface PluginInputParams extends BaseInputParams {
 // - converts `Ex` into `In` and holds it
 // - P is the type of the parsed parameters
 //
-export const TemplateInputPlugin: InputBindingPlugin<
-	number,
-	number,
-	PluginInputParams
+export const CustomObjectColorInputPlugin: InputBindingPlugin<
+	Color,
+	RgbColorObject | RgbaColorObject,
+	ColorInputParams
 > = {
-	id: 'input-template',
-
-	// type: The plugin type.
-	// - 'input': Input binding
-	// - 'monitor': Monitor binding
+	id: 'input-color-object',
 	type: 'input',
-
-	// This plugin template injects a compiled CSS by @rollup/plugin-replace
-	// See rollup.config.js for details
-	css: '__css__',
-
-	accept(exValue: unknown, params: Record<string, unknown>) {
-		if (typeof exValue !== 'number') {
-			// Return null to deny the user input
+	accept: (value, params) => {
+		if (!Color.isColorObject(value)) {
 			return null;
 		}
-
-		// Parse parameters object
-		const p = ParamsParsers;
-		const result = parseParams<PluginInputParams>(params, {
-			// `view` option may be useful to provide a custom control for primitive values
-			view: p.required.constant('dots'),
-
-			max: p.optional.number,
-			min: p.optional.number,
-			step: p.optional.number,
-		});
-		if (!result) {
-			return null;
-		}
-
-		// Return a typed value and params to accept the user input
-		return {
-			initialValue: exValue,
-			params: result,
-		};
+		const result = parseColorInputParams(params);
+		return result
+			? {
+					initialValue: value,
+					params: result,
+			  }
+			: null;
 	},
-
 	binding: {
-		reader(_args) {
-			return (exValue: unknown): number => {
-				// Convert an external unknown value into the internal value
-				return typeof exValue === 'number' ? exValue : 0;
-			};
-		},
-
-		constraint(args) {
-			// Create a value constraint from the user input
-			const constraints = [];
-			// You can reuse existing functions of the default plugins
-			const cr = createRangeConstraint(args.params);
-			if (cr) {
-				constraints.push(cr);
-			}
-			const cs = createStepConstraint(args.params);
-			if (cs) {
-				constraints.push(cs);
-			}
-			// Use `CompositeConstraint` to combine multiple constraints
-			return new CompositeConstraint(constraints);
-		},
-
-		writer(_args) {
-			return (target: BindingTarget, inValue) => {
-				// Use `target.write()` to write the primitive value to the target,
-				// or `target.writeProperty()` to write a property of the target
-				target.write(inValue);
-			};
-		},
+		reader: (_args) => colorFromObject,
+		equals: Color.equals,
+		writer: (args) =>
+			createColorObjectWriter(shouldSupportAlpha(args.initialValue)),
 	},
+	controller: (args) => {
+		const supportsAlpha = Color.isRgbaColorObject(args.initialValue);
+		const expanded =
+			'expanded' in args.params ? args.params.expanded : undefined;
+		const picker = 'picker' in args.params ? args.params.picker : undefined;
+		const formatter = supportsAlpha
+			? colorToHexRgbaString
+			: colorToHexRgbString;
 
-	controller(args) {
-		// Create a controller for the plugin
-		return new PluginController(args.document, {
+		return new ColorController(args.document, {
+			expanded: expanded ?? false,
+			formatter: formatter,
+			parser: CompositeColorParser,
+			pickerLayout: picker ?? 'popup',
+			supportsAlpha: supportsAlpha,
 			value: args.value,
 			viewProps: args.viewProps,
 		});
