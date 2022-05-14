@@ -23,10 +23,11 @@ export interface PluginInputParams extends BaseInputParams {
 
 function colorFromObject(value: unknown): Color {
 	if (Color.isColorObject(value)) {
-		value.r = value.r * 255;
-		value.g = value.g * 255;
-		value.b = value.b * 255;
-		return Color.fromObject(value);
+		const tValue = {...value};
+		tValue.r = value.r * 255;
+		tValue.g = value.g * 255;
+		tValue.b = value.b * 255;
+		return Color.fromObject(tValue);
 	}
 	return Color.black();
 }
@@ -87,6 +88,10 @@ export const CustomObjectColorInputPlugin: InputBindingPlugin<
 			return null;
 		}
 		const result = parseColorInputParams(params);
+
+		console.log('result', result);
+		console.log('value', value);
+
 		return result
 			? {
 					initialValue: value,
